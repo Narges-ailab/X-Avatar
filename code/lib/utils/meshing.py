@@ -39,7 +39,7 @@ def generate_mesh(func, verts, level_set=0, res_init=32, res_up=3, shape_represe
     value_grid = mesh_extractor.to_dense()
 
     # marching cube
-    verts, faces, normals, values = measure.marching_cubes_lewiner(
+    verts, faces, normals, values = measure.marching_cubes(
                                                 volume=value_grid,
                                                 gradient_direction='ascent',
                                                 level=max(min(level_set, value_grid.max()),value_grid.min()),)

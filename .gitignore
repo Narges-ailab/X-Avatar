@@ -156,3 +156,6 @@ multirun
 training_log
 kaolin
 **.DS_Store
+
+# Local motion data
+demo_motion_sequence/
