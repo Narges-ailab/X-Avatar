@@ -8,7 +8,12 @@ import open3d as o3d
 import torch
 from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
-import kaolin
+from lib.utils.geometry_rocm import (
+    sided_distance,
+    index_vertices_by_faces,
+    point_to_mesh_distance,
+    check_sign,
+)
 import trimesh
 
 
@@ -289,7 +294,7 @@ class XHumansDataProcessor():
                 random_normal_list = []
                 
                 # predict the part type of each point
-                _, close_id = kaolin.metrics.pointcloud.sided_distance(
+                _, close_id = sided_distance(
                     pcl_verts, regstr_verts)
                 pcl_label_vector = self.regstr_label_vector[close_id[0]]
                 body_ids = torch.where(
@@ -345,7 +350,7 @@ class XHumansDataProcessor():
                     self.opt.points_per_frame // 15, num_dim)
                 
                 if lhand_is_valid:
-                    _, close_id = kaolin.metrics.pointcloud.sided_distance(
+                    _, close_id = sided_distance(
                         random_lhand_pts, regstr_verts)
                     random_lhand_pts = regstr_verts[:, close_id[0]]
                     random_lhand_normal = regstr_normals[:,
@@ -357,7 +362,7 @@ class XHumansDataProcessor():
                     random_normal_list.append(random_lhand_normal)
                 
                 if rhand_is_valid:
-                    _, close_id = kaolin.metrics.pointcloud.sided_distance(
+                    _, close_id = sided_distance(
                         random_rhand_pts, regstr_verts)
                     random_rhand_pts = regstr_verts[:, close_id[0]]
                     random_rhand_normal = regstr_normals[:,

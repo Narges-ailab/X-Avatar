@@ -5,7 +5,12 @@ import os.path as osp
 import trimesh
 from tqdm import tqdm
 import torch
-import kaolin
+from lib.utils.geometry_rocm import (
+    sided_distance,
+    index_vertices_by_faces,
+    point_to_mesh_distance,
+    check_sign,
+)
 import argparse
 import pickle as pkl
 
@@ -94,7 +99,7 @@ def find_hand_face_points(points_src, normals_src, points_smplx,
     normals_src = torch.tensor(normals_src).cuda().unsqueeze(0)
     points_smplx = torch.tensor(points_smplx).cuda().unsqueeze(0)
 
-    _, close_id_src = kaolin.metrics.pointcloud.sided_distance(
+    _, close_id_src = sided_distance(
         points_src, points_smplx)
     src_label_vector = smplx_label_vector[close_id_src[0]]
     src_lhand_ids = torch.where(src_label_vector == 1)[0]

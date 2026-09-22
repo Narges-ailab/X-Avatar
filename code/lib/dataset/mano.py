@@ -7,7 +7,12 @@ import pickle as pkl
 import torch
 from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
-import kaolin
+from lib.utils.geometry_rocm import (
+    sided_distance,
+    index_vertices_by_faces,
+    point_to_mesh_distance,
+    check_sign,
+)
 import trimesh
 
 
@@ -144,7 +149,7 @@ class MANODataProcessor():
             sampled_pts = self.sampler.get_points(random_pts, sample_size=0)
             
             pts_d.append(sampled_pts)
-            shape_gt.append(kaolin.ops.mesh.check_sign(
+            shape_gt.append(check_sign(
                     regstr_verts, data['regstr_faces'][i],
                     sampled_pts).float().unsqueeze(-1))
 

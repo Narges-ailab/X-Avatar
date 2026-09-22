@@ -7,7 +7,12 @@ import pickle as pkl
 import torch
 from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
-import kaolin
+from lib.utils.geometry_rocm import (
+    sided_distance,
+    index_vertices_by_faces,
+    point_to_mesh_distance,
+    check_sign,
+)
 import trimesh
 
 
@@ -368,7 +373,7 @@ class XHumansDataProcessor():
                 random_idx = list()
                 
                 # predict the part type of each point
-                _, close_id = kaolin.metrics.pointcloud.sided_distance(
+                _, close_id = sided_distance(
                     scan_verts, regstr_verts)
                 scan_label_vector = self.regstr_label_vector[close_id[0]]
                 body_ids = torch.where(
@@ -414,8 +419,8 @@ class XHumansDataProcessor():
             
             if self.opt.category_sample:
                 # sample face details from the surface
-                face_vertices = kaolin.ops.mesh.index_vertices_by_faces(scan_verts, scan_faces)
-                _, eye_mouth_f_idx, _ = kaolin.metrics.trianglemesh.point_to_mesh_distance(
+                face_vertices = index_vertices_by_faces(scan_verts, scan_faces)
+                _, eye_mouth_f_idx, _ = point_to_mesh_distance(
                     regstr_verts[:, self.eye_mouth_ids], face_vertices)
                 eye_mouth_pts, eye_mouth_normals, eye_mouth_colors, _ = sample_surface_wnormalcolor(
                     scan_mesh, self.split_numbers[1] // 2,
@@ -464,24 +469,24 @@ class XHumansDataProcessor():
                 
                 shape_gt_batch.append(
                     torch.cat([
-                        kaolin.ops.mesh.check_sign(
+                        check_sign(
                             scan_verts, scan_faces,
                             pts_d_data).float().unsqueeze(-1),
-                        kaolin.ops.mesh.check_sign(
+                        check_sign(
                             regstr_verts, regstr_faces,
                             sampled_hand_pts).float().unsqueeze(-1)
                     ], dim=1))
                 
                 pts_surf_data.append(random_hand_pts)
 
-                _, close_id = kaolin.metrics.pointcloud.sided_distance(
+                _, close_id = sided_distance(
                     random_hand_pts, scan_verts)
                 color_gt_data.append(scan_colors[:, close_id[0]])            
             else:
                 pts_d_data = torch.cat(pts_d_data, dim=1)
                 pts_d_batch.append(pts_d_data)
                 shape_gt_batch.append(
-                    kaolin.ops.mesh.check_sign(
+                    check_sign(
                         scan_verts, scan_faces,
                         pts_d_data).float().unsqueeze(-1))
 
